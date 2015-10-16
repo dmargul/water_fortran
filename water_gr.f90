@@ -1,64 +1,65 @@
 program water_radial_distributions
   implicit none
       
-    integer, parameter :: n_frames_total  = 500
-    integer, parameter :: n_water         = 512
-    integer, parameter :: n_ox            = n_water 
-    integer, parameter :: n_hy            = n_ox * 2
-    integer, parameter :: n_atoms         = n_ox + n_hy
-    integer, parameter :: oo_pairs        = n_ox * (n_ox - 1) / 2
-    integer, parameter :: oh_pairs        = n_ox * n_hy
-    integer, parameter :: hh_pairs        = n_hy * (n_hy - 1) / 2
-    integer, parameter :: total_oo_pairs  = n_frames_total * oo_pairs
-    integer, parameter :: total_oh_pairs  = n_frames_total * oh_pairs
-    integer, parameter :: total_hh_pairs  = n_frames_total * hh_pairs
-    integer, parameter :: n_bins_gr       = 200
-    integer, parameter :: n_snaps         = 5
-    integer            :: i_snap
-    integer            :: n_frames
-    integer            :: frames_here
-    real,    parameter :: delta_time      = 0.150d0 ! picoseconds between frames
-    real,    parameter :: pi              = acos(-1.0d0)
-    real,    parameter :: distance_min_gr = 0.0d0  ! Angstrom
-    real,    parameter :: distance_max_gr = 12.4d0 ! Angstrom
-    real,    parameter :: gr_dist_delta   = (distance_max_gr - distance_min_gr) / real(n_bins_gr)
-    real,    parameter :: length_a        = 24.832132 ! Angstrom
-    real,    parameter :: length_b        = 24.832132 ! Angstrom
-    real,    parameter :: length_c        = 24.832132 ! Angstrom 
-    real,    parameter :: box_volume      = length_a * length_b * length_c
-    real,    parameter :: o_mass          = 15.995 ! amu
-    real,    parameter :: h_mass          = 1.008  ! amu
-    real,    parameter :: h2o_mass        = o_mass  + h_mass  + h_mass
-    real,    parameter :: system_mass     = n_water * h2o_mass
-    real               :: o_pos (n_frames_total, n_ox, 3)
-    real               :: h_pos (n_frames_total, n_hy, 3)
-    real               :: distance_oo 
-    real               :: distance_oh 
-    real               :: distance_hh 
-    real               :: oo_counted (n_bins_gr)
-    real               :: oh_counted (n_bins_gr)
-    real               :: hh_counted (n_bins_gr)
-    real               :: distance_gr (n_bins_gr)
-    real               :: oo_gr (n_bins_gr)
-    real               :: oh_gr (n_bins_gr)
-    real               :: hh_gr (n_bins_gr)
-    real               :: oo_gr_time (n_snaps, n_bins_gr)
-    real               :: oh_gr_time (n_snaps, n_bins_gr)
-    real               :: hh_gr_time (n_snaps, n_bins_gr)
-    real               :: oo_conv (n_snaps)
-    real               :: oh_conv (n_snaps)
-    real               :: hh_conv (n_snaps)
+    integer,     parameter :: n_frames_total  = 500
+    integer,     parameter :: n_water         = 512
+    integer,     parameter :: n_ox            = n_water 
+    integer,     parameter :: n_hy            = n_ox * 2
+    integer,     parameter :: n_atoms         = n_ox + n_hy
+    integer,     parameter :: oo_pairs        = n_ox * (n_ox - 1) / 2
+    integer,     parameter :: oh_pairs        = n_ox * n_hy
+    integer,     parameter :: hh_pairs        = n_hy * (n_hy - 1) / 2
+    integer,     parameter :: total_oo_pairs  = n_frames_total * oo_pairs
+    integer,     parameter :: total_oh_pairs  = n_frames_total * oh_pairs
+    integer,     parameter :: total_hh_pairs  = n_frames_total * hh_pairs
+    integer,     parameter :: n_bins_gr       = 200
+    integer,     parameter :: n_snaps         = 5
+    integer,     parameter :: dp              = kind(0.0d0)
+    integer                :: i_snap
+    integer                :: n_frames
+    integer                :: frames_here
+    real(dp),    parameter :: delta_time      = 0.150d0 ! picoseconds between frames
+    real(dp),    parameter :: pi              = acos(-1.0d0)
+    real(dp),    parameter :: distance_min_gr = 0.0d0  ! Angstrom
+    real(dp),    parameter :: distance_max_gr = 12.4d0 ! Angstrom
+    real(dp),    parameter :: gr_dist_delta   = (distance_max_gr - distance_min_gr) / real(n_bins_gr)
+    real(dp),    parameter :: length_a        = 24.832132 ! Angstrom
+    real(dp),    parameter :: length_b        = 24.832132 ! Angstrom
+    real(dp),    parameter :: length_c        = 24.832132 ! Angstrom 
+    real(dp),    parameter :: box_volume      = length_a * length_b * length_c
+    real(dp),    parameter :: o_mass          = 15.995 ! amu
+    real(dp),    parameter :: h_mass          = 1.008  ! amu
+    real(dp),    parameter :: h2o_mass        = o_mass  + h_mass  + h_mass
+    real(dp),    parameter :: system_mass     = n_water * h2o_mass
+    real(dp)               :: o_pos (n_frames_total, n_ox, 3)
+    real(dp)               :: h_pos (n_frames_total, n_hy, 3)
+    real(dp)               :: distance_oo 
+    real(dp)               :: distance_oh 
+    real(dp)               :: distance_hh 
+    real(dp)               :: oo_counted (n_bins_gr)
+    real(dp)               :: oh_counted (n_bins_gr)
+    real(dp)               :: hh_counted (n_bins_gr)
+    real(dp)               :: distance_gr (n_bins_gr)
+    real(dp)               :: oo_gr (n_bins_gr)
+    real(dp)               :: oh_gr (n_bins_gr)
+    real(dp)               :: hh_gr (n_bins_gr)
+    real(dp)               :: oo_gr_time (n_snaps, n_bins_gr)
+    real(dp)               :: oh_gr_time (n_snaps, n_bins_gr)
+    real(dp)               :: hh_gr_time (n_snaps, n_bins_gr)
+    real(dp)               :: oo_conv (n_snaps)
+    real(dp)               :: oh_conv (n_snaps)
+    real(dp)               :: hh_conv (n_snaps)
 
     call read_water_xyz (o_pos, h_pos)
     call center_mass_removal (o_pos, h_pos)
     do i_snap = 1, n_snaps
       frames_here = nint(real(n_frames_total) / (real(n_snaps)/real(i_snap)) )
-      call distance_oo_oh_hh (o_pos, h_pos, oo_counted, oh_counted, hh_counted)
-      call gr_normalize (oo_counted, oh_counted, hh_counted, oo_gr, oh_gr, hh_gr, distance_gr)
-      call gr_snapshot (oo_gr, oh_gr, hh_gr, oo_gr_time, oh_gr_time, hh_gr_time)
+      call make_distributions (o_pos, h_pos, oo_counted, oh_counted, hh_counted)
+      call norm_distributions (oo_counted, oh_counted, hh_counted, oo_gr, oh_gr, hh_gr, distance_gr)
+      call save_distributions (oo_gr, oh_gr, hh_gr, oo_gr_time, oh_gr_time, hh_gr_time)
     end do
 
-    call gr_converge (oo_gr_time, oh_gr_time, hh_gr_time, oo_conv, oh_conv, hh_conv)
+    call distribution_convergence (oo_gr_time, oh_gr_time, hh_gr_time, oo_conv, oh_conv, hh_conv)
 
   contains
 
@@ -66,7 +67,7 @@ program water_radial_distributions
 
       implicit none
       integer :: t_step, o, h1, h2
-      real :: o_pos(:,:,:), h_pos(:,:,:)
+      real(dp) :: o_pos(:,:,:), h_pos(:,:,:)
 
       open(unit=10, file='water.xyz', status='old')
 
@@ -88,9 +89,9 @@ program water_radial_distributions
 
       implicit none
       integer :: t_step, o1, o2, h, h1, h2
-      real :: o_pos(:,:,:), h_pos(:,:,:)
-      real :: x_1, x_2, y_1, y_2, z_1, z_2
-      real :: x_mid, y_mid, z_mid
+      real(dp) :: o_pos(:,:,:), h_pos(:,:,:)
+      real(dp) :: x_1, x_2, y_1, y_2, z_1, z_2
+      real(dp) :: x_mid, y_mid, z_mid
 
       outer: do t_step = 1, n_frames_total
 
@@ -130,17 +131,17 @@ program water_radial_distributions
 
     end subroutine center_mass_removal
 
-    subroutine distance_oo_oh_hh(o_pos,h_pos,oo_counted,oh_counted,hh_counted)
+    subroutine make_distributions(o_pos,h_pos,oo_counted,oh_counted,hh_counted)
 
       implicit none
-      integer :: t_step, o1, o2, h, h1, h2, i_bin
-      real :: o_pos(:,:,:), h_pos(:,:,:)
-      real :: x_1, x_2, y_1, y_2, z_1, z_2
-      real :: disp_x2, disp_y2, disp_z2, disp_r2
-      real :: disp_x, disp_y, disp_z, disp_r
-      real :: oo_counted(:), oh_counted(:), hh_counted(:)
-      real :: distance_oo, distance_oh, distance_hh
-      real :: dist
+      integer  :: t_step, o1, o2, h, h1, h2, i_bin
+      real(dp) :: o_pos(:,:,:), h_pos(:,:,:)
+      real(dp) :: x_1, x_2, y_1, y_2, z_1, z_2
+      real(dp) :: disp_x2, disp_y2, disp_z2, disp_r2
+      real(dp) :: disp_x, disp_y, disp_z, disp_r
+      real(dp) :: oo_counted(:), oh_counted(:), hh_counted(:)
+      real(dp) :: distance_oo, distance_oh, distance_hh
+      real(dp) :: dist
 
 
       init: do i_bin = 1, n_bins_gr
@@ -230,17 +231,17 @@ program water_radial_distributions
 
       end do outer
 
-    end subroutine distance_oo_oh_hh
+    end subroutine make_distributions
 
 
-    subroutine gr_normalize(oo_counted, oh_counted, hh_counted, oo_gr, oh_gr, hh_gr, distance_gr)
+    subroutine norm_distributions(oo_counted, oh_counted, hh_counted, oo_gr, oh_gr, hh_gr, distance_gr)
 
       implicit none
-      real     :: gr_sphere_const 
-      real     :: oo_counted(:), oh_counted(:), hh_counted(:)
-      real     :: distance_gr(:), oo_gr(:), oh_gr(:), hh_gr(:)
-      real     :: r_high, r_low
-      real     :: n_theory, n_theory_oo, n_theory_oh, n_theory_hh
+      real(dp)     :: gr_sphere_const 
+      real(dp)     :: oo_counted(:), oh_counted(:), hh_counted(:)
+      real(dp)     :: distance_gr(:), oo_gr(:), oh_gr(:), hh_gr(:)
+      real(dp)     :: r_high, r_low
+      real(dp)     :: n_theory, n_theory_oo, n_theory_oh, n_theory_hh
       integer  :: i_bin
 
       gr_sphere_const = 4.0d0 * pi * frames_here  / 3.0d0 
@@ -257,14 +258,14 @@ program water_radial_distributions
         hh_gr(i_bin) = hh_counted(i_bin) / n_theory_hh
       end do
 
-    end subroutine gr_normalize
+    end subroutine norm_distributions
 
-    subroutine gr_snapshot(oo_gr, oh_gr, hh_gr, oo_gr_time, oh_gr_time, hh_gr_time)
+    subroutine save_distributions(oo_gr, oh_gr, hh_gr, oo_gr_time, oh_gr_time, hh_gr_time)
 
       implicit none
       integer :: i_bin
-      real    :: oo_gr(:), oh_gr(:), hh_gr(:)
-      real    :: oo_gr_time(:,:), oh_gr_time(:,:), hh_gr_time(:,:)
+      real(dp)    :: oo_gr(:), oh_gr(:), hh_gr(:)
+      real(dp)    :: oo_gr_time(:,:), oh_gr_time(:,:), hh_gr_time(:,:)
 
       do i_bin = 1, n_bins_gr
         oo_gr_time(i_snap, i_bin) = oo_gr(i_bin)
@@ -272,15 +273,15 @@ program water_radial_distributions
         hh_gr_time(i_snap, i_bin) = hh_gr(i_bin)
       end do
 
-    end subroutine gr_snapshot
+    end subroutine save_distributions
 
-    subroutine gr_converge(oo_gr_time, oh_gr_time, hh_gr_time, oo_conv, oh_conv, hh_conv)
+    subroutine distribution_convergence(oo_gr_time, oh_gr_time, hh_gr_time, oo_conv, oh_conv, hh_conv)
 
       implicit none
       integer :: i_snap, i_bin
-      real    :: oo_gr_time(:,:), oh_gr_time(:,:), hh_gr_time(:,:)
-      real    :: oo_conv(:), oh_conv(:), hh_conv(:)
-      real    :: squ_1, squ_2
+      real(dp)    :: oo_gr_time(:,:), oh_gr_time(:,:), hh_gr_time(:,:)
+      real(dp)    :: oo_conv(:), oh_conv(:), hh_conv(:)
+      real(dp)    :: squ_1, squ_2
 
       open(unit=11, file='oo_gr.dat', status='replace')
       open(unit=12, file='oh_gr.dat', status='replace')
@@ -316,9 +317,9 @@ program water_radial_distributions
       end do 
 
       do i_snap = 1, n_snaps
-        write(21,*) i_snap, oo_conv(i_snap)
-        write(22,*) i_snap, oh_conv(i_snap)
-        write(23,*) i_snap, hh_conv(i_snap)
+        write(21,*) i_snap*(real(n_frames_total) / (real(n_snaps)/real(i_snap) ) ), oo_conv(i_snap)
+        write(22,*) i_snap*(real(n_frames_total) / (real(n_snaps)/real(i_snap) ) ), oh_conv(i_snap)
+        write(23,*) i_snap*(real(n_frames_total) / (real(n_snaps)/real(i_snap) ) ), hh_conv(i_snap)
       end do
 
       close(unit=11)
@@ -330,6 +331,6 @@ program water_radial_distributions
       close(unit=23)
 
 
-    end subroutine gr_converge
+    end subroutine distribution_convergence
 
 end program water_radial_distributions

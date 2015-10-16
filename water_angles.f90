@@ -1,13 +1,13 @@
 program water_hbond_angle_distributions
   implicit none
       
-    integer,  parameter :: n_frames_total  = 400
+    integer,  parameter :: n_frames_total  = 40
     integer,  parameter :: n_water         = 512
     integer,  parameter :: n_ox            = n_water 
     integer,  parameter :: n_hy            = n_ox * 2
     integer,  parameter :: n_atoms         = n_ox + n_hy
     integer,  parameter :: n_bins          = 100
-    integer,  parameter :: n_snaps         = 40
+    integer,  parameter :: n_snaps         = 5
     integer             :: i_snap
     integer             :: n_frames
     integer             :: frames_here
@@ -289,7 +289,7 @@ program water_hbond_angle_distributions
 
 
         end do
-        
+
       end do 
 
 
@@ -351,6 +351,7 @@ program water_hbond_angle_distributions
 
       implicit none
       integer  :: i_snap, i_bin
+      real(dp) :: time_now
       real(dp) :: alpha_conv_time(:,:), beta_conv_time(:,:), theta_conv_time(:,:)
       real(dp) :: alpha_conv(:), beta_conv(:), theta_conv(:)
       real(dp) :: squ_1, squ_2
@@ -385,9 +386,10 @@ program water_hbond_angle_distributions
       end do
 
       do i_snap = 1, n_snaps
-        write(21,*) i_snap, alpha_conv(i_snap)
-        write(22,*) i_snap,  beta_conv(i_snap)
-        write(23,*) i_snap, theta_conv(i_snap)
+         time_now = delta_time*(real(n_frames_total) / (real(n_snaps)/real(i_snap) ) )
+        write(21,*) time_now, alpha_conv(i_snap)
+        write(22,*) time_now,  beta_conv(i_snap)
+        write(23,*) time_now, theta_conv(i_snap)
       end do
 
 
